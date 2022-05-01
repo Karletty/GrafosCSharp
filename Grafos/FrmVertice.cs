@@ -26,7 +26,7 @@ namespace Grafos
         {
             string v = txtVertice.Text.Trim();
 
-            if (v == "" || v == " ")
+            if ((v == "") || (v == " "))
             {
                 MessageBox.Show("Debe ingresar un valor", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }

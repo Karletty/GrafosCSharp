@@ -56,8 +56,8 @@ namespace Grafos
             this.ListaAdyacencia = new List<Arco>();
             this._banderas = new Dictionary<string, short>();
             this._banderas_predeterminado = new Dictionary<string, short>();
-            this.Color = Color.Green;
-            this.dimensiones = new Size(size, size);
+            this.Color = Color.FromArgb(49,47,47);
+            this.Dimensiones = new Size(size, size);
             this.FontColor = Color.White;
         }
         
@@ -66,7 +66,8 @@ namespace Grafos
         public void DibujarVertice(Graphics g)
         {
             SolidBrush b = new SolidBrush(this.colorNodo);
-            Rectangle areaNodo = new Rectangle(this.pos.X - radio, this.pos.Y - radio, this.Dimensiones.Width, this.Dimensiones.Height);
+            int posX = this.pos.X - this.radio, posY = this.pos.Y - this.radio;
+            Rectangle areaNodo = new Rectangle(posX, posY, this.dimensiones.Width, this.dimensiones.Height);
             g.FillEllipse(b, areaNodo);
             g.DrawString(this.Valor, new Font("Times New Roman", 14), new SolidBrush(colorFuente), this.pos.X, this.pos.Y, new StringFormat()
             {
@@ -85,8 +86,8 @@ namespace Grafos
 
             foreach (Arco arco in ListaAdyacencia)
             {
-                dX = this.pos.X - arco.nDestino.pos.X;
-                dY = this.pos.Y - arco.nDestino.pos.Y;
+                dX = this.Posicion.X - arco.nDestino.Posicion.X;
+                dY = this.Posicion.Y - arco.nDestino.Posicion.Y;
 
                 distancia = (float)Math.Sqrt(dX * dX + dY * dY);
 

@@ -17,6 +17,7 @@ namespace Grafos
         private Vertice nuevoNodo;
         private Vertice nodoOrigen;
         private Vertice nodoDestino;
+        private Vertice nodoEliminar;
         enum Control
         {
             SinAccion,
@@ -33,7 +34,7 @@ namespace Grafos
             nuevoNodo = null;
             control = Control.SinAccion;
             ventanaVertice = new FrmVertice();
-            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
         }
 
         private void Pizarra_Paint(object sender, PaintEventArgs e)
@@ -58,26 +59,27 @@ namespace Grafos
         {
             nuevoNodo = new Vertice();
             control = Control.DibujandoVertice;
-            ventanaVertice.Visible = true;
         }
 
         private void Pizarra_MouseUp(object sender, MouseEventArgs e)
         {
-            if (control == Control.DibujandoArco)
+            switch (control)
             {
-                if ((nodoDestino = grafo.DetectarPunto(e.Location)) != null && nodoOrigen != nodoDestino)
-                {
-                    if (grafo.AgregarArco(nodoOrigen, nodoDestino))
+                case Control.DibujandoArco:
+                    if ((nodoDestino = grafo.DetectarPunto(e.Location)) != null && nodoOrigen != nodoDestino)
                     {
-                        int d = 0;
-                        nodoOrigen.ListaAdyacencia.Find(v => v.nDestino == nodoDestino).peso = d;
+                        if (grafo.AgregarArco(nodoOrigen, nodoDestino))
+                        {
+                            int d = 0;
+                            nodoOrigen.ListaAdyacencia.Find(v => v.nDestino == nodoDestino).peso = d;
+                        }
                     }
-                }
-                control = Control.SinAccion;
-                nodoOrigen = null;
-                nodoDestino = null;
+                    control = Control.SinAccion;
+                    nodoOrigen = null;
+                    nodoDestino = null;
 
-                Pizarra.Refresh();
+                    Pizarra.Refresh();
+                    break;
             }
         }
 
@@ -85,17 +87,8 @@ namespace Grafos
         {
             switch (control)
             {
-                case Control.DibujandoArco:
-                    AdjustableArrowCap bigArrow = new AdjustableArrowCap(4, 4, true);
-                    bigArrow.BaseCap = LineCap.Triangle;
-                    Pizarra.Refresh();
-                    Pizarra.CreateGraphics().DrawLine(new Pen(Brushes.Black, 2)
-                    {
-                        CustomEndCap = bigArrow
-                    }, nodoOrigen.Posicion, e.Location);
-                    break;
                 case Control.DibujandoVertice:
-                    if(nuevoNodo != null)
+                    if (nuevoNodo != null)
                     {
                         int posX = e.Location.X;
                         int posY = e.Location.Y;
@@ -109,28 +102,42 @@ namespace Grafos
                             posY = nuevoNodo.Dimensiones.Height / 2;
                         else if (posY > Pizarra.Size.Height - nuevoNodo.Dimensiones.Width / 2)
                             posY = Pizarra.Size.Height - nuevoNodo.Dimensiones.Width / 2;
+                        nuevoNodo.Posicion = new Point(posX, posY);
+                        Pizarra.Refresh();
+                        nuevoNodo.DibujarVertice(Pizarra.CreateGraphics());
                     }
+                    break;
+                case Control.DibujandoArco:
+                    AdjustableArrowCap bigArrow = new AdjustableArrowCap(4, 4, true);
+                    bigArrow.BaseCap = LineCap.Triangle;
+                    Pizarra.Refresh();
+                    Pizarra.CreateGraphics().DrawLine(new Pen(Brushes.Black, 2)
+                    {
+                        CustomEndCap = bigArrow
+                    }, nodoOrigen.Posicion, e.Location);
                     break;
             }
         }
 
         private void Pizarra_MouseDown(object sender, MouseEventArgs e)
         {
-            if(e.Button == MouseButtons.Left)
+            if (e.Button == MouseButtons.Left)
             {
                 if ((nodoOrigen = grafo.DetectarPunto(e.Location)) != null)
                     control = Control.DibujandoArco;
-                if(nuevoNodo != null && nodoOrigen == null)
+                if (nuevoNodo != null && nodoOrigen == null)
                 {
                     ventanaVertice.Visible = false;
                     ventanaVertice.control = false;
-                    grafo.AgregarVertice(nuevoNodo);
                     ventanaVertice.ShowDialog();
 
                     if (ventanaVertice.control)
                     {
                         if (grafo.BuscarVertice(ventanaVertice.txtVertice.Text) == null)
+                        {
                             nuevoNodo.Valor = ventanaVertice.txtVertice.Text;
+                            grafo.AgregarVertice(nuevoNodo);
+                        }
                         else
                             MessageBox.Show($"El nodo {ventanaVertice.txtVertice.Text} ya existe en el grafo", "Error nuevo nodo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
@@ -140,16 +147,38 @@ namespace Grafos
                     Pizarra.Refresh();
                 }
             }
-            if(e.Button == MouseButtons.Right)
+            if (e.Button == MouseButtons.Right)
             {
-                if(control == Control.SinAccion)
+                if (control == Control.SinAccion)
                 {
                     if ((nodoOrigen = grafo.DetectarPunto(e.Location)) != null)
+                    {
                         CMSCrearVertice.Text = $"Nodo {nodoOrigen.Valor}";
+                    }
                     else
                         Pizarra.ContextMenuStrip = this.CMSCrearVertice;
                 }
+                if ((nodoEliminar = grafo.DetectarPunto(e.Location)) != null)
+                {
+                    CMSEliminarVertice.Items.Clear();
+                    CMSEliminarVertice.Items.Add(eliminarVérticeToolStripMenuItem);
+                    foreach (Arco arco in nodoEliminar.ListaAdyacencia)
+                    {
+                        CMSEliminarVertice.Items.Add($"Eliminar arco hacia {arco.nDestino.ToString()}", default(Image), (snd, evt) =>
+                        {
+                            nodoEliminar.ListaAdyacencia.Remove(arco);
+                            Pizarra.Refresh();
+                        });
+                    }
+                    Pizarra.ContextMenuStrip = this.CMSEliminarVertice;
+                }
             }
+        }
+
+        private void eliminarVérticeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            grafo.EliminarVertice(nodoEliminar);
+            Pizarra.Refresh();
         }
     }
 }
