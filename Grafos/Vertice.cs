@@ -10,11 +10,13 @@ namespace Grafos
 {
     class Vertice
     {
+        //Se declaran las variables para crear el vértice
         public string Valor;
         public List<Arco> ListaAdyacencia;
         Dictionary<string, short> _banderas;
         Dictionary<string, short> _banderas_predeterminado;
 
+        //Se declaran las variables para dibujar el vértice
         static int size = 35;
         Size dimensiones;
         Color colorNodo;
@@ -52,23 +54,28 @@ namespace Grafos
 
         public Vertice(string val)
         {
+            //El constructor del vértice que inicializa los valores
             this.Valor = val;
             this.ListaAdyacencia = new List<Arco>();
             this._banderas = new Dictionary<string, short>();
             this._banderas_predeterminado = new Dictionary<string, short>();
-            this.Color = Color.FromArgb(49,47,47);
+            this.Color = Color.FromArgb(49, 47, 47);
             this.Dimensiones = new Size(size, size);
             this.FontColor = Color.White;
         }
-        
+
         public Vertice() : this("") { }
 
         public void DibujarVertice(Graphics g)
         {
+            //Declara el pincel, la posición y el área en la que se ubicará el vértice
             SolidBrush b = new SolidBrush(this.colorNodo);
-            int posX = this.pos.X - this.radio, posY = this.pos.Y - this.radio;
+            int posX = this.pos.X - this.radio,
+                posY = this.pos.Y - this.radio;
             Rectangle areaNodo = new Rectangle(posX, posY, this.dimensiones.Width, this.dimensiones.Height);
             g.FillEllipse(b, areaNodo);
+
+            //Se escribe el valor del vértice y se dibuja el círculo que lo representa
             g.DrawString(this.Valor, new Font("Times New Roman", 14), new SolidBrush(colorFuente), this.pos.X, this.pos.Y, new StringFormat()
             {
                 Alignment = StringAlignment.Center,
@@ -84,6 +91,7 @@ namespace Grafos
             float distancia;
             int dX, dY;
 
+            //Recorre la lista de adyacencia del vértice y calcula la distancia que hay entre los nodos, crea un triángulo para la flecha y dibuja la línea con esta, luego escribe el peso que tiene el arco
             foreach (Arco arco in ListaAdyacencia)
             {
                 dX = this.Posicion.X - arco.nDestino.Posicion.X;
@@ -96,9 +104,10 @@ namespace Grafos
 
                 g.DrawLine(
                     new Pen(new SolidBrush(arco.color), arco.grosorFlecha)
-                        {
-                            CustomEndCap = bigArrow, Alignment = PenAlignment.Center
-                        },
+                    {
+                        CustomEndCap = bigArrow,
+                        Alignment = PenAlignment.Center
+                    },
                     pos,
                     new Point(arco.nDestino.Posicion.X + (int)(radio * dX / distancia), arco.nDestino.Posicion.Y + (int)(radio * dY / distancia)));
 
@@ -109,21 +118,22 @@ namespace Grafos
                     this.pos.X - (int)(dX / 3),
                     this.pos.Y - (int)(dY / 3),
                     new StringFormat()
-                        {
-                            Alignment = StringAlignment.Center,
-                            LineAlignment = StringAlignment.Far
-                        }
+                    {
+                        Alignment = StringAlignment.Center,
+                        LineAlignment = StringAlignment.Far
+                    }
                     );
             }
         }
 
         public bool DetectarPunto(Point p)
         {
+            //Detecta si en la posición indicada existe este vértice
             GraphicsPath posicion = new GraphicsPath();
             posicion.AddEllipse(
                 new Rectangle(
-                    this.pos.X - this.dimensiones.Width/2,
-                    this.pos.Y - this.dimensiones.Height/2,
+                    this.pos.X - this.dimensiones.Width / 2,
+                    this.pos.Y - this.dimensiones.Height / 2,
                     this.dimensiones.Width,
                     this.dimensiones.Height
                     ));
@@ -133,7 +143,8 @@ namespace Grafos
         }
 
         public string ToString()
-        {
+        { 
+            //Declara el método ToString para que regrese el valor del vértice
             return this.Valor;
         }
     }

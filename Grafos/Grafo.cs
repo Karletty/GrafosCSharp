@@ -99,6 +99,7 @@ namespace Grafos
 
         public void EliminarVertice(Vertice v)
         {
+            //Recorre todos los vértices y para cada uno crea una lista nueva de arcos, la cuál remueve los arcos que iban hacia el vértice a eliminar antes de eliminarlo
             foreach (Vertice vertice in vertices)
             {
                 List<Arco> arcosConservar = new List<Arco>();
